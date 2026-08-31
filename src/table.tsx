@@ -35,7 +35,7 @@ export const Table = ({
   }, []);
 
   const hooks = useMemo(() => {
-    const afterSelectionChange = (sheetId: string, selection: Selection) => {
+    const afterSelectionChange = (_sheetId: string, selection: Selection) => {
       const s = {
         r: selection.row[0],
         c: selection.column[0],

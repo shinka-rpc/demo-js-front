@@ -143,12 +143,12 @@ export class ServerWorkbook {
     let target: any = sheet;
 
     for (let i = 0; i < valuePath.length - 1; i += 1) {
-      const key = valuePath[i];
+      const key = valuePath[i]!;
       if (target == null) return;
       target = target[key];
     }
 
-    const last = valuePath[valuePath.length - 1];
+    const last = valuePath[valuePath.length - 1]!;
     if (target == null) return;
     target[last] = op.value;
   }
@@ -181,7 +181,7 @@ export class ServerWorkbook {
     let target: any = sheet;
 
     for (let i = 0; i < targetPath.length - 1; i += 1) {
-      const key = targetPath[i];
+      const key = targetPath[i]!;
       if (target == null) return;
       if (target[key] == null) {
         target[key] = Array.isArray(targetPath[i + 1]) ? [] : {};
@@ -189,7 +189,7 @@ export class ServerWorkbook {
       target = target[key];
     }
 
-    const last = targetPath[targetPath.length - 1];
+    const last = targetPath[targetPath.length - 1]!;
     if (target == null) return;
 
     if (Array.isArray(target)) {
@@ -221,12 +221,12 @@ export class ServerWorkbook {
     let target: any = sheet;
 
     for (let i = 0; i < targetPath.length - 1; i += 1) {
-      const key = targetPath[i];
+      const key = targetPath[i]!;
       if (target == null) return;
       target = target[key];
     }
 
-    const last = targetPath[targetPath.length - 1];
+    const last = targetPath[targetPath.length - 1]!;
     if (target == null) return;
 
     if (Array.isArray(target)) {
