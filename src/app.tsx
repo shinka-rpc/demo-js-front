@@ -5,9 +5,7 @@ import { type WorkbookInstance } from "@fortune-sheet/react";
 import { Client } from "@shinka-rpc/core";
 import serializer from "@shinka-rpc/serializer-msgspec";
 import { sharedWorkerClient } from "@shinka-rpc/shared-worker";
-import type { OutScope, OutScopeEventListener } from "@shinka-rpc/outscope";
-
-import { useOnce } from "./lib/use-once";
+import { useOutScope } from "@shinka-rpc/react";
 
 import { Table } from "./table";
 
@@ -46,14 +44,7 @@ export default () => {
   const workbookRef = useRef<WorkbookInstance>(null);
   const user = useMemo(selfAssignUser, []);
 
-  useOnce(() => {
-    const handlers = new Set<OutScopeEventListener>();
-
-    const add = handlers.add.bind(handlers);
-    const remove = handlers.delete.bind(handlers);
-
-    const outscope: OutScope = { add, remove };
-
+  useOutScope((outscope) => {
     const client = new Client<any, any, any>({
       responseTimeout: 15_000,
       outscope,
@@ -77,14 +68,6 @@ export default () => {
     client.onDataEvent("op", (data: Op[]) =>
       workbookRef.current!.applyOp(data),
     );
-
-    return () => {
-      client.stop();
-      for (const cb of Array.from(handlers)) {
-        cb();
-        handlers.delete(cb);
-      }
-    };
   });
 
   if (!connected) return <Disconnected />;
