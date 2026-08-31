@@ -1,10 +1,11 @@
-import { Server, type IBus, Client } from "@shinka-rpc/core";
+import { Server, Client } from "@shinka-rpc/core";
 import outscope from "@shinka-rpc/outscope/browser-page";
 import { sharedWorkerServer } from "@shinka-rpc/shared-worker";
 import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
 import serializer from "@shinka-rpc/serializer-msgspec";
 import { ReusablePromise } from "@shinka-rpc/concurrency";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
+import { clientRegistry } from "@shinka-rpc/scenarios";
 
 import {
   ServerWorkbook,
@@ -14,8 +15,6 @@ import {
 
 let workbook: ServerWorkbook | null = null;
 
-const clients = new Set<IBus<any, any>>();
-
 const server = new Server<any, any, any>({
   outscope,
   transport: sharedWorkerServer,
@@ -23,8 +22,8 @@ const server = new Server<any, any, any>({
 });
 
 server.addEventListener("error", console.error);
-server.addEventListener("connect", (bus) => clients.add(bus));
-server.addEventListener("disconnect", (bus) => clients.delete(bus));
+
+const clients = clientRegistry(server);
 
 const wsClientTransport = clientWebSocketTransport(
   () => new WebSocket(`${process.env.PUBLIC_WS_SERVER}/ws`),
