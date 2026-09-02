@@ -3,9 +3,8 @@ import outscope from "@shinka-rpc/outscope/browser-page";
 import { sharedWorkerServer } from "@shinka-rpc/shared-worker";
 import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
 import serializer from "@shinka-rpc/serializer-msgspec";
-import { ReusablePromise } from "@shinka-rpc/concurrency";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
-import { clientRegistry } from "@shinka-rpc/scenarios";
+import { clientRegistry, waitConnected } from "@shinka-rpc/scenarios";
 
 import {
   ServerWorkbook,
@@ -33,14 +32,12 @@ const wsClient = new Client<any, any, any>({
   outscope,
   transport: wsClientTransport,
   serializer,
-  limon: limonOpportunistic({}),
+  limon: limonOpportunistic(),
 });
 
-const wsConnecting = new ReusablePromise<void>();
+const wsConnecting = waitConnected(wsClient);
 
 wsClient.addEventListener("error", console.error);
-wsClient.addEventListener("connect", () => wsConnecting.resolve());
-wsClient.addEventListener("disconnect", () => wsConnecting.reset());
 
 server.onRequest("get-data", async () => {
   if (workbook) return workbook.state;
