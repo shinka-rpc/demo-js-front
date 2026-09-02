@@ -5,6 +5,7 @@ import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
 import serializer from "@shinka-rpc/serializer-msgspec";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
 import { clientRegistry, waitConnected } from "@shinka-rpc/scenarios";
+import { ReusablePromise } from "@shinka-rpc/concurrency";
 
 import {
   ServerWorkbook,
@@ -14,10 +15,10 @@ import {
 
 let workbook: ServerWorkbook | null = null;
 
-const server = new Server<any, any, any>({
+const server = new Server({
   outscope,
-  transport: sharedWorkerServer,
   serializer,
+  transport: sharedWorkerServer,
 });
 
 server.addEventListener("error", console.error);
@@ -28,7 +29,7 @@ const wsClientTransport = clientWebSocketTransport(
   () => new WebSocket(`${process.env.PUBLIC_WS_SERVER}/ws`),
 );
 
-const wsClient = new Client<any, any, any>({
+const wsClient = new Client({
   outscope,
   transport: wsClientTransport,
   serializer,
@@ -39,11 +40,21 @@ const wsConnecting = waitConnected(wsClient);
 
 wsClient.addEventListener("error", console.error);
 
+let isGettingData = false;
+const waitGettingData = new ReusablePromise<void>();
+
 server.onRequest("get-data", async () => {
   if (workbook) return workbook.state;
+  if (isGettingData) {
+    await waitGettingData;
+    return workbook!.state;
+  }
+  isGettingData = true;
   await wsConnecting;
   const data = await wsClient.request<WorkbookState>("get-data", 0);
   workbook = new ServerWorkbook(data);
+  waitGettingData.resolve();
+  isGettingData = false;
   return data;
 });
 

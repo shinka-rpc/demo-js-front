@@ -38,14 +38,14 @@ const transport = sharedWorkerClient(
 );
 
 export default () => {
-  const [data, setData] = useState<Sheet[]>();
-  const clientRef = useRef<Client<any, any, any>>(null);
-  const [connected, setConnected] = useState(false);
+  const { 0: data, 1: setData } = useState<Sheet[]>();
+  const clientRef = useRef<Client>(null);
+  const { 0: connected, 1: setConnected } = useState(false);
   const workbookRef = useRef<WorkbookInstance>(null);
   const user = useMemo(selfAssignUser, []);
 
   useOutScope((outscope) => {
-    const client = new Client<any, any, any>({
+    const client = new Client({
       responseTimeout: 15_000,
       outscope,
       transport,
