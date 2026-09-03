@@ -69,7 +69,6 @@ wsClient.onDataEvent("op", (ops: Op[]) => {
   if (!workbook) return;
   workbook.applyOps(ops);
   for (const client of clients) client.dataEvent("op", ops);
-  wsClient.dataEvent("op", ops);
 });
 
 server.start();
