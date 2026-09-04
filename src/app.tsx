@@ -63,7 +63,7 @@ export default () => {
 
     clientRef.current = client;
 
-    client.start();
+    client.start().catch();
 
     client.onDataEvent("op", (data: Op[]) =>
       workbookRef.current!.applyOp(data),

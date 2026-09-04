@@ -72,4 +72,4 @@ wsClient.onDataEvent("op", (ops: Op[]) => {
 });
 
 server.start();
-wsClient.start();
+wsClient.start().catch();
