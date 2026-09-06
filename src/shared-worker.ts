@@ -2,7 +2,8 @@ import { Server, Client } from "@shinka-rpc/core";
 import outscope from "@shinka-rpc/outscope/browser-page";
 import { sharedWorkerServer } from "@shinka-rpc/shared-worker";
 import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
-import serializer from "@shinka-rpc/serializer-msgspec";
+import serializerMsgPack from "@shinka-rpc/serializer-msgspec";
+// import { streamGzip } from "@shinka-rpc/serializer-gzip";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
 import { clientRegistry, waitConnected } from "@shinka-rpc/scenarios";
 import { ReusablePromise } from "@shinka-rpc/concurrency";
@@ -17,7 +18,7 @@ let workbook: ServerWorkbook | null = null;
 
 const server = new Server({
   outscope,
-  serializer,
+  serializer: serializerMsgPack,
   transport: sharedWorkerServer,
 });
 
@@ -29,10 +30,13 @@ const wsClientTransport = clientWebSocketTransport(
   () => new WebSocket(`${process.env.PUBLIC_WS_SERVER}/ws`),
 );
 
+// const wsSerializer = streamGzip(serializerMsgPack, {});
+const wsSerializer = serializerMsgPack;
+
 const wsClient = new Client({
   outscope,
   transport: wsClientTransport,
-  serializer,
+  serializer: wsSerializer,
   limon: limonOpportunistic(),
 });
 
@@ -52,6 +56,7 @@ server.onRequest("get-data", async () => {
   isGettingData = true;
   await wsConnecting;
   const data = await wsClient.request<WorkbookState>("get-data", 0);
+  console.log({ data });
   workbook = new ServerWorkbook(data);
   waitGettingData.resolve();
   isGettingData = false;

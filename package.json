@@ -17,6 +17,7 @@
     "@shinka-rpc/outscope": "^0.1.0-alpha.0",
     "@shinka-rpc/react": "^0.1.0-alpha.0",
     "@shinka-rpc/scenarios": "^0.1.0-alpha.1",
+    "@shinka-rpc/serializer-gzip": "^0.1.0-alpha.3",
     "@shinka-rpc/serializer-msgspec": "^0.1.0-alpha.0",
     "@shinka-rpc/shared-worker": "^0.1.0-alpha.0",
     "@shinka-rpc/web-socket": "^0.1.0-alpha.0",
