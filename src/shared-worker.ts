@@ -56,7 +56,6 @@ server.onRequest("get-data", async () => {
   isGettingData = true;
   await wsConnecting;
   const data = await wsClient.request<WorkbookState>("get-data", 0);
-  console.log({ data });
   workbook = new ServerWorkbook(data);
   waitGettingData.resolve();
   isGettingData = false;
