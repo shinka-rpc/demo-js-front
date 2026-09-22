@@ -3,7 +3,7 @@ import outscope from "@shinka-rpc/outscope/browser-page";
 import { sharedWorkerServer } from "@shinka-rpc/shared-worker";
 import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
 import serializerMsgPack from "@shinka-rpc/serializer-msgspec";
-// import { streamGzip } from "@shinka-rpc/serializer-gzip";
+import { streamGzip } from "@shinka-rpc/serializer-gzip";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
 import { clientRegistry, waitConnected } from "@shinka-rpc/scenarios";
 import { ReusablePromise } from "@shinka-rpc/concurrency";
@@ -30,8 +30,7 @@ const wsClientTransport = clientWebSocketTransport(
   () => new WebSocket(`${process.env.PUBLIC_WS_SERVER}/ws`),
 );
 
-// const wsSerializer = streamGzip(serializerMsgPack, {});
-const wsSerializer = serializerMsgPack;
+const wsSerializer = streamGzip(serializerMsgPack, { deflate: { gzip: true } });
 
 const wsClient = new Client({
   outscope,
