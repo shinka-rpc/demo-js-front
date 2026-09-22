@@ -30,6 +30,7 @@ const wsClientTransport = clientWebSocketTransport(
   () => new WebSocket(`${process.env.PUBLIC_WS_SERVER}/ws`),
 );
 
+// Example high-order-serializer usage
 const wsSerializer = streamGzip(serializerMsgPack, { deflate: { gzip: true } });
 
 const wsClient = new Client({
