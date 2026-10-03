@@ -5,16 +5,17 @@ import { clientWebSocketTransport } from "@shinka-rpc/web-socket";
 import serializerMsgPack from "@shinka-rpc/serializer-msgspec";
 import { streamGzip } from "@shinka-rpc/serializer-gzip";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
-import { clientRegistry, waitConnected } from "@shinka-rpc/scenarios";
-import { ReusablePromise } from "@shinka-rpc/concurrency";
+import {
+  clientRegistry,
+  waitConnected,
+  createSingleFlight,
+} from "@shinka-rpc/scenarios";
 
 import {
   ServerWorkbook,
   type WorkbookState,
   type Op,
 } from "./lib/server-workbook";
-
-let workbook: ServerWorkbook | null = null;
 
 const server = new Server({
   outscope,
@@ -44,23 +45,20 @@ const wsConnecting = waitConnected(wsClient);
 
 wsClient.addEventListener("error", console.error);
 
-let isGettingData = false;
-const waitGettingData = new ReusablePromise<void>();
+let workbook: ServerWorkbook | null = null;
 
-server.onRequest("get-data", async () => {
-  if (workbook) return workbook.state;
-  if (isGettingData) {
-    await waitGettingData;
-    return workbook!.state;
-  }
-  isGettingData = true;
-  await wsConnecting;
-  const data = await wsClient.request<WorkbookState>("get-data", 0);
-  workbook = new ServerWorkbook(data);
-  waitGettingData.resolve();
-  isGettingData = false;
-  return data;
+const { 0: getWorkBook } = createSingleFlight({
+  read: () => workbook!.state,
+  reset: () => (workbook = null),
+  retrieve: async () => {
+    await wsConnecting;
+    const data = await wsClient.request<WorkbookState>("get-data", 0);
+    workbook = new ServerWorkbook(data);
+    return data;
+  },
 });
+
+server.onRequest("get-data", getWorkBook);
 
 server.onDataEvent("op", (ops: Op[], bus) => {
   if (!workbook) return;
