@@ -7,7 +7,7 @@ import { streamGzip } from "@shinka-rpc/serializer-gzip";
 import limonOpportunistic from "@shinka-rpc/limon-opportunistic";
 import {
   clientRegistry,
-  waitConnected,
+  readinessBarrier,
   createSingleFlight,
 } from "@shinka-rpc/scenarios";
 
@@ -41,7 +41,7 @@ const wsClient = new Client({
   limon: limonOpportunistic(),
 });
 
-const wsConnecting = waitConnected(wsClient);
+const wsReadinessBarrier = readinessBarrier(wsClient);
 
 wsClient.addEventListener("error", console.error);
 
@@ -51,7 +51,7 @@ const { 0: getWorkBook } = createSingleFlight({
   read: () => workbook!.state,
   reset: () => (workbook = null),
   retrieve: async () => {
-    await wsConnecting;
+    await wsReadinessBarrier;
     const data = await wsClient.request<WorkbookState>("get-data", 0);
     workbook = new ServerWorkbook(data);
     return data;

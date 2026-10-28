@@ -52,13 +52,15 @@ export default () => {
       serializer,
     });
 
-    client.addEventListener("connect", () => {
+    const setDisconnected = setConnected.bind(0, false);
+
+    client.addEventListener("connecting", setDisconnected);
+    client.addEventListener("connected", () => {
       setConnected(true);
       client.request<Sheet[]>("get-data", 0).then(setData).catch(console.error);
     });
-    client.addEventListener("disconnect", () => {
-      setConnected(false);
-    });
+    client.addEventListener("disconnecting", setDisconnected);
+    client.addEventListener("disconnected", setDisconnected);
     client.addEventListener("error", (...args) => console.error(args));
 
     clientRef.current = client;
